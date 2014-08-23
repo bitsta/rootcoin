@@ -1,0 +1,9 @@
+Building RootCoin
+
+See doc/readme-qt.rst for instructions on building RootCoin QT,
+the intended-for-end-users, nice-graphical-interface, reference
+implementation of RootCoin.
+
+See doc/build-*.txt for instructions on building RootCoind,
+the intended-for-services, no-graphical-interface, reference
+implementation of RootCoin.
