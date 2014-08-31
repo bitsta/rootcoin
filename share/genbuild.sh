@@ -16,10 +16,10 @@ if [ -e "$(which git)" ]; then
     git diff >/dev/null 2>/dev/null 
 
 
-    DESC="v1.1.0.0-beta"
+    DESC="v1.2.0.0"
     # get a string like "2012-04-10 16:27:19 +0200"
     #TIME="$(git log -n 1 --format="%ci")"
-    TIME="2014-08-22 11:11:11 +0200"
+    TIME="2014-08-31 11:11:11 +0200"
 fi
 
 if [ -n "$DESC" ]; then
