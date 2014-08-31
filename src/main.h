@@ -37,8 +37,8 @@ static const int64 MAX_MONEY = 3000000ULL * COIN;	    // 3 million total ROOT
 static const int64 CIRCULATION_MONEY = MAX_MONEY;
 static const double TAX_PERCENTAGE = 0.01;
 static const int64 MAX_RC_PROOF_OF_STAKE = 0.03 * COIN;	// 3% stake interest
-static const int CUTOFF_POW_BLOCK = 10000;              // ~5 weeks
-static const int MODIFIER_SWITCH_BLOCK = 7000;          // ~3 weeks
+static const int CUTOFF_POW_BLOCK = 3700;              // ~12 days
+static const int MODIFIER_SWITCH_BLOCK = 3000;          // ~10 days
 static const int64 MIN_TXOUT_AMOUNT = MIN_TX_FEE;
 
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
