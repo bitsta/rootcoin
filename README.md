@@ -8,4 +8,6 @@ Blocktime: 5 minutes
 Blockreward: 99 ROOT
 sharebase : rootex
 IRC: #rootcoin
+PoW/PoS
 
+with integrated anon-tx BitKey and RootSend
