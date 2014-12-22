@@ -1,8 +1,8 @@
-*RootCoin [ROOT]
+# RootCoin [ROOT]
 
-**www.rootcoin.co
+## www.rootcoin.co
 
-**Specifications:
+## Specifications:
 
 Algorithm: scrypt
 
