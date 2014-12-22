@@ -70,12 +70,10 @@ ExplorerPage::~ExplorerPage()
     delete ui;
 }
 
-void ExplorerPage::setClientModel(ClientModel *model)
+void ExplorerPage::setModel(ClientModel *model)
 {
     this->clientModel = model;
-    if(model)
-    {
-    }
+
 }
 
 void ExplorerPage::setWalletModel(WalletModel *model)
@@ -93,29 +91,29 @@ void ExplorerPage::finished(QNetworkReply *reply) {
 }
 
 void ExplorerPage::DoHttpGet() {
-  QString url1 = "https://chainz.cryptoid.info/root/tx.dws?";
-  QString url2 = "https://chainz.cryptoid.info/root/block.dws?";
-  QString url3 = "https://chainz.cryptoid.info/root/address.dws?";
-  QString end1 = ".htm";
+  QString url1 = "http://root.explorer.ssdpool.com:9083/tx/";
+  QString url2 = "http://root.explorer.ssdpool.com:9083/api/getblockhash?index=";
+  QString url3 = "http://root.explorer.ssdpool.com:9083/address/";
+//  QString end = ".htm";
   QString final;
   QString data = ui->dataLine->text();
   int size = data.size();
   
 if(size == 34)
 {
-final = url3 + data + end;
+final = url3 + data;
 }
 else if(size == 64)
 {
-final = url1 + data + end;
+final = url1 + data;
 }
 else if(size == 68)
 {
 QString datax = data.left(64);
-final = url1 + datax + end;
+final = url1 + datax;
 }
 else {
-final = url2 + data + end;
+final = url2 + data;
 }
   QByteArray postData;
   postData.append(data.toAscii());

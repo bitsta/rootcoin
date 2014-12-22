@@ -27,7 +27,7 @@ public:
     explicit ExplorerPage(QWidget *parent = 0);
     ~ExplorerPage();
 
-    void setClientModel(ClientModel *clientModel);
+    void setModel(ClientModel *clientModel);
     void setWalletModel(WalletModel *walletModel);
 
 public slots:
