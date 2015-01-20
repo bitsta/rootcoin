@@ -19,3 +19,12 @@ sharebase : rootex
 IRC: #rootcoin
 
 
+## More information
+
+Install the librootcoin rpc-library for the bitkey integration.
+The QT-adaptions are work in progress and nearly final beta.
+
+
+contact: support@rootcoin.co
+
+
