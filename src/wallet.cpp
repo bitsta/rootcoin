@@ -108,6 +108,7 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase)
             if (CCryptoKeyStore::Unlock(vMasterKey))
                 return true;
         }
+        UnlockStealthAddresses(vMasterKey);
     }
     return false;
 }
@@ -128,7 +129,7 @@ bool CWallet::ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase,
                 return false;
             if (!crypter.Decrypt(pMasterKey.second.vchCryptedKey, vMasterKey))
                 return false;
-            if (CCryptoKeyStore::Unlock(vMasterKey))
+            if (CCryptoKeyStore::Unlock(vMasterKey) && UnlockStealthAddresses(vMasterKey))
             {
                 int64 nStartTime = GetTimeMillis();
                 crypter.SetKeyFromPassphrase(strNewWalletPassphrase, pMasterKey.second.vchSalt, pMasterKey.second.nDeriveIterations, pMasterKey.second.nDerivationMethod);
@@ -273,6 +274,34 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
                 pwalletdbEncryption->TxnAbort();
             exit(1); //We now probably have half of our keys encrypted in memory, and half not...die and let the user reload their unencrypted wallet.
         }
+        
+        std::set<CStealthAddress>::iterator it;
+	for (it = stealthAddresses.begin(); it != stealthAddresses.end(); ++it)
+	{
+		if (it->scan_secret.size() < 32)
+			continue; // stealth address is not owned
+		// -- CStealthAddress is only sorted on spend_pubkey
+		CStealthAddress &sxAddr = const_cast<CStealthAddress&>(*it);
+
+		if (fDebug)
+			printf("Encrypting stealth key %s\n", sxAddr.Encoded().c_str());
+
+		std::vector<unsigned char> vchCryptedSecret;
+		
+		CSecret vchSecret;
+		vchSecret.resize(32);
+		memcpy(&vchSecret[0], &sxAddr.spend_secret[0], 32);
+
+		uint256 iv = Hash(sxAddr.spend_pubkey.begin(), sxAddr.spend_pubkey.end());
+		if (!EncryptSecret(vMasterKey, vchSecret, iv, vchCryptedSecret))
+		{
+			printf("Error: Failed encrypting stealth key %s\n", sxAddr.Encoded().c_str());
+			continue;
+		};
+
+		sxAddr.spend_secret = vchCryptedSecret;
+		pwalletdbEncryption->WriteStealthAddress(sxAddr);
+	};
 
         // Encryption was introduced in version 0.4.0
         SetMinVersion(FEATURE_WALLETCRYPT, pwalletdbEncryption, true);
@@ -509,6 +538,10 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransaction& tx, const CBlock* pbl
         LOCK(cs_wallet);
         bool fExisted = mapWallet.count(hash);
         if (fExisted && !fUpdate) return false;
+	
+	mapValue_t mapNarr;
+	FindStealthTransactions(tx, mapNarr);
+        
         if (fExisted || IsMine(tx) || IsFromMe(tx))
         {
             CWalletTx wtx(this,tx);
@@ -1269,8 +1302,22 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64> >& vecSend, CW
                 int64 nTotalValue = nValue + nFeeRet;
                 double dPriority = 0;
                 // vouts to the payees
+                
                 BOOST_FOREACH (const PAIRTYPE(CScript, int64)& s, vecSend)
+                {
+			CScript::const_iterator itTxA = txout.scriptPubKey.begin();
+			if (!txout.IsScriptOpReturn())
+			{
+				if (txout.IsDust(CTransaction::nMinRelayTxFee))
+				{
+					LogPrintf("%s\n", txout.ToString());
+					strFailReason = _("Transaction amount too small");
+					return false;
+				}
+			}
                     wtxNew.vout.push_back(CTxOut(s.second, s.first));
+                }
+
 
                 // Choose coins to use
                 set<pair<const CWalletTx*,unsigned int> > setCoins;
