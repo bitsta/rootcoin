@@ -7,6 +7,7 @@
 
 #include "db.h"
 #include "base58.h"
+#include "anonaddress.h"
 
 class CKeyPool;
 class CAccount;
@@ -23,6 +24,30 @@ enum DBErrors
     DB_NEED_REWRITE
 };
 
+class CStealthKeyMetadata
+{
+// -- used to get secret for keys created by stealth transaction with wallet locked
+public:
+    CStealthKeyMetadata() {};
+    
+    CStealthKeyMetadata(CPubKey pkEphem_, CPubKey pkScan_)
+    {
+        pkEphem = pkEphem_;
+        pkScan = pkScan_;
+    };
+    
+    CPubKey pkEphem;
+    CPubKey pkScan;
+
+    IMPLEMENT_SERIALIZE
+    (
+        READWRITE(pkEphem);
+        READWRITE(pkScan);
+    )
+
+};
+
+
 /** Access to the wallet database (wallet.dat) */
 class CWalletDB : public CDB
 {
@@ -34,6 +59,30 @@ private:
     CWalletDB(const CWalletDB&);
     void operator=(const CWalletDB&);
 public:
+    Dbc* GetAtCursor()
+    {
+        return GetCursor();
+    }
+
+    Dbc* GetTxnCursor()
+    {
+        if (!pdb)
+            return NULL;
+
+        DbTxn* ptxnid = activeTxn; // call TxnBegin first
+
+        Dbc* pcursor = NULL;
+        int ret = pdb->cursor(ptxnid, &pcursor, 0);
+        if (ret != 0)
+            return NULL;
+        return pcursor;
+    }
+
+    DbTxn* GetAtActiveTxn()
+    {
+        return activeTxn;
+    }
+
     bool WriteName(const std::string& strAddress, const std::string& strName);
 
     bool EraseName(const std::string& strAddress);
